@@ -69,8 +69,9 @@ update msg snake =
 
 -- VIEW
 
-textColour = rgb 150 150 150
 backgroundColour = rgb 204 255 204
+snakeColour = rgb 20 50 20
+
 gridWidth = 1000
 gridHeight = 1000
 
@@ -90,7 +91,7 @@ fillGrid (x,y) =
     adjustedX = -(500) + (x * 50) + 25
     adjustedY = -(500) + (y * 50) + 25
   in
-    draw (adjustedX,adjustedY) (rect 50 50) black
+    draw (adjustedX,adjustedY) (rect 50 50) snakeColour
 
 draw : (Int, Int) -> Shape -> Color -> Form
 draw (x,y) shape color =
