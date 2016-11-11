@@ -1,3 +1,4 @@
+import AnimationFrame
 import Color exposing (..)
 import Debug
 import Collage exposing (..)
@@ -7,19 +8,22 @@ import Html.App as App
 import Keyboard
 import List
 import Task
+import Time exposing (..)
 import Window
 
 type alias Snake =
   {
     coords : List (Int, Int),
-    size: Window.Size
+    size: Window.Size,
+    direction: Direction
   }
 
 defaultSnake : Snake
 defaultSnake =
   {
     coords = [(5,10),(5,9),(5,8),(5,7),(5,6)],
-    size = Window.Size 0 0
+    size = Window.Size 0 0,
+    direction = Right
   }
 
 init : (Snake, Cmd Msg)
@@ -27,7 +31,8 @@ init = (defaultSnake, Task.perform (\_ -> NoOp) Resize (Window.size))
 
 type Msg
   = Resize Window.Size
-  | Move Direction
+  | ChangeDirection Direction
+  | Tick Time
   | NoOp
 
 type Direction = Left | Up | Right | Down
@@ -68,10 +73,19 @@ wrap pos =
 
 update : Msg -> Snake -> (Snake, Cmd Msg)
 update msg snake =
-  case msg of
-    NoOp -> (snake, Cmd.none)
-    Move direction -> (moveSnake snake direction, Cmd.none)
-    Resize size -> ({ snake | size = size }, Cmd.none)
+  let
+    dbg = Debug.log "Game state" snake
+  in
+    case msg of
+      NoOp -> (snake, Cmd.none)
+      ChangeDirection direction ->
+        ({ snake | direction = direction }, Cmd.none)
+      Tick time ->
+        if (floor time) % 2 == 0 then
+          (moveSnake snake snake.direction, Cmd.none)
+        else
+          (snake, Cmd.none)
+      Resize size -> ({ snake | size = size }, Cmd.none)
 
 -- VIEW
 
@@ -112,15 +126,16 @@ subscriptions snake =
   Sub.batch
     [
       Window.resizes Resize,
-      Keyboard.downs keyCodeToMsg
+      Keyboard.downs keyCodeToMsg,
+      AnimationFrame.times (Tick<<inMilliseconds)
     ]
 
 keyCodeToMsg keyCode =
   case keyCode of
-    37 -> Move Left
-    38 -> Move Up
-    39 -> Move Right
-    40 -> Move Down
+    37 -> ChangeDirection Left
+    38 -> ChangeDirection Up
+    39 -> ChangeDirection Right
+    40 -> ChangeDirection Down
     _ -> NoOp
 
 -- MAIN
