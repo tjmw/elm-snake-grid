@@ -15,7 +15,8 @@ type alias Snake =
   {
     coords : List (Int, Int),
     size: Window.Size,
-    direction: Direction
+    direction: Direction,
+    ticks: Int
   }
 
 defaultSnake : Snake
@@ -23,7 +24,8 @@ defaultSnake =
   {
     coords = [(5,10),(5,9),(5,8),(5,7),(5,6)],
     size = Window.Size 0 0,
-    direction = Right
+    direction = Right,
+    ticks = 0
   }
 
 init : (Snake, Cmd Msg)
@@ -73,19 +75,19 @@ wrap pos =
 
 update : Msg -> Snake -> (Snake, Cmd Msg)
 update msg snake =
-  let
-    dbg = Debug.log "Game state" snake
-  in
-    case msg of
-      NoOp -> (snake, Cmd.none)
-      ChangeDirection direction ->
-        ({ snake | direction = direction }, Cmd.none)
-      Tick time ->
-        if (floor time) % 2 == 0 then
-          (moveSnake snake snake.direction, Cmd.none)
+  case msg of
+    NoOp -> (snake, Cmd.none)
+    ChangeDirection direction ->
+      ({ snake | direction = direction }, Cmd.none)
+    Tick _ ->
+      let
+        snake_ = { snake | ticks = snake.ticks + 1}
+      in
+        if snake_.ticks % 6 == 0 then
+          (moveSnake snake_ snake_.direction, Cmd.none)
         else
-          (snake, Cmd.none)
-      Resize size -> ({ snake | size = size }, Cmd.none)
+          (snake_, Cmd.none)
+    Resize size -> ({ snake | size = size }, Cmd.none)
 
 -- VIEW
 
@@ -127,7 +129,7 @@ subscriptions snake =
     [
       Window.resizes Resize,
       Keyboard.downs keyCodeToMsg,
-      AnimationFrame.times (Tick<<inMilliseconds)
+      AnimationFrame.diffs (Tick<<inMilliseconds)
     ]
 
 keyCodeToMsg keyCode =
