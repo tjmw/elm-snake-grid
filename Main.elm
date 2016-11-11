@@ -4,6 +4,7 @@ import Collage exposing (..)
 import Element exposing (..)
 import Html exposing (..)
 import Html.App as App
+import List
 import Task
 import Window
 
@@ -16,7 +17,7 @@ type alias Snake =
 defaultSnake : Snake
 defaultSnake =
   {
-    coords = [(3,3), (3,4)],
+    coords = [(1,2),(1,3),(2,3),(3,3),(3,4)],
     size = Window.Size 0 0
   }
 
@@ -37,20 +38,32 @@ update msg snake =
 
 textColour = rgb 150 150 150
 backgroundColour = rgb 204 255 204
+gridWidth = 1000
+gridHeight = 1000
 
 view : Snake -> Html Msg
 view ({coords, size} as snake) =
   toHtml <|
   container size.width size.height middle <|
-  collage 1000 1000
-    [
-      rect 1000 10000 |> filled backgroundColour
+  collage gridWidth gridHeight <|
+    List.concat [
+      [rect gridWidth gridHeight |> filled backgroundColour],
+      List.map fillGrid coords
     ]
 
---make obj shape color =
-  --shape
-    --|> filled color
-    --|> move (obj.x,obj.y)
+fillGrid : (Int, Int) -> Form
+fillGrid (x,y) =
+  let
+    adjustedX = -(500) + (x * 50) + 25
+    adjustedY = -(500) + (y * 50) + 25
+  in
+    draw (adjustedX,adjustedY) (rect 50 50) black
+
+draw : (Int, Int) -> Shape -> Color -> Form
+draw (x,y) shape color =
+  shape
+    |> filled color
+    |> move (toFloat x, toFloat y)
 
 -- SUBSCRIPTIONS
 
