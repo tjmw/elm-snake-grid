@@ -32,15 +32,16 @@ type Msg
 
 type Direction = Left | Up | Right | Down
 
-moveSnake : Snake -> Direction -> Snake
-moveSnake snake direction =
+removeTail : Snake -> Snake
+removeTail snake =
+  { snake | coords = List.take ((List.length snake.coords) - 1) snake.coords }
+
+addHead : Direction -> Snake -> Snake
+addHead direction snake =
   let
     coords_ = snake.coords
-    coords__ = List.take ((List.length coords_) - 1) coords_
-
-    currentHead = List.head coords__
-
-    coords___ = case currentHead of
+    currentHead = List.head coords_
+    newCoords = case currentHead of
       Just a ->
         let
           (x,y) = a
@@ -50,10 +51,14 @@ moveSnake snake direction =
             Right -> (wrap (x + 1), y)
             Down -> (x, wrap (y - 1))
         in
-          newHead :: coords__
-      Nothing -> coords__
+          newHead :: coords_
+      Nothing -> coords_
   in
-    { snake | coords = coords___ }
+     { snake | coords = newCoords }
+
+moveSnake : Snake -> Direction -> Snake
+moveSnake snake direction =
+  addHead direction <| removeTail snake
 
 wrap : Int -> Int
 wrap pos =
