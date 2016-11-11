@@ -55,6 +55,7 @@ moveSnake snake direction =
   in
     { snake | coords = coords___ }
 
+wrap : Int -> Int
 wrap pos =
   if pos < 0 then 19
   else if pos > 19 then 0
