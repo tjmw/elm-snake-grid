@@ -4,6 +4,7 @@ import Collage exposing (..)
 import Element exposing (..)
 import Html exposing (..)
 import Html.App as App
+import Keyboard
 import List
 import Task
 import Window
@@ -17,7 +18,7 @@ type alias Snake =
 defaultSnake : Snake
 defaultSnake =
   {
-    coords = [(1,2),(1,3),(2,3),(3,3),(3,4)],
+    coords = [(5,10),(5,9),(5,8),(5,7),(5,6)],
     size = Window.Size 0 0
   }
 
@@ -26,12 +27,44 @@ init = (defaultSnake, Task.perform (\_ -> NoOp) Resize (Window.size))
 
 type Msg
   = Resize Window.Size
+  | Move Direction
   | NoOp
+
+type Direction = Left | Up | Right | Down
+
+moveSnake : Snake -> Direction -> Snake
+moveSnake snake direction =
+  let
+    coords_ = snake.coords
+    coords__ = List.take ((List.length coords_) - 1) coords_
+
+    currentHead = List.head coords__
+
+    coords___ = case currentHead of
+      Just a ->
+        let
+          (x,y) = a
+          newHead = case direction of
+            Left -> (wrap (x - 1), y)
+            Up -> (x, wrap (y + 1))
+            Right -> (wrap (x + 1), y)
+            Down -> (x, wrap (y - 1))
+        in
+          newHead :: coords__
+      Nothing -> coords__
+  in
+    { snake | coords = coords___ }
+
+wrap pos =
+  if pos < 0 then 19
+  else if pos > 19 then 0
+  else pos
 
 update : Msg -> Snake -> (Snake, Cmd Msg)
 update msg snake =
   case msg of
     NoOp -> (snake, Cmd.none)
+    Move direction -> (moveSnake snake direction, Cmd.none)
     Resize size -> ({ snake | size = size }, Cmd.none)
 
 -- VIEW
@@ -70,7 +103,18 @@ draw (x,y) shape color =
 subscriptions : Snake -> Sub Msg
 subscriptions snake =
   Sub.batch
-    [ Window.resizes Resize ]
+    [
+      Window.resizes Resize,
+      Keyboard.downs keyCodeToMsg
+    ]
+
+keyCodeToMsg keyCode =
+  case keyCode of
+    37 -> Move Left
+    38 -> Move Up
+    39 -> Move Right
+    40 -> Move Down
+    _ -> NoOp
 
 -- MAIN
 
