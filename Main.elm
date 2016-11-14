@@ -49,9 +49,8 @@ addHead direction snake =
     coords_ = snake.coords
     currentHead = List.head coords_
     newCoords = case currentHead of
-      Just a ->
+      Just (x,y) ->
         let
-          (x,y) = a
           newHead = case direction of
             Left -> (wrap (x - 1), y)
             Up -> (x, wrap (y + 1))
