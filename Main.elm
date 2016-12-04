@@ -93,8 +93,10 @@ update msg snake =
 backgroundColour = rgb 204 255 204
 snakeColour = rgb 20 50 20
 
-gridWidth = 1000
-gridHeight = 1000
+gridWidth = 600
+gridHeight = 600
+
+blockSize = gridWidth // 20
 
 view : Snake -> Html Msg
 view ({coords, size} as snake) =
@@ -109,10 +111,10 @@ view ({coords, size} as snake) =
 fillGrid : (Int, Int) -> Form
 fillGrid (x,y) =
   let
-    adjustedX = -(500) + (x * 50) + 25
-    adjustedY = -(500) + (y * 50) + 25
+    adjustedX = -(gridWidth // 2) + (x * blockSize) + (blockSize // 2)
+    adjustedY = -(gridHeight // 2) + (y * blockSize) + (blockSize // 2)
   in
-    draw (adjustedX,adjustedY) (rect 50 50) snakeColour
+    draw (adjustedX, adjustedY) (rect (toFloat blockSize) (toFloat blockSize)) snakeColour
 
 draw : (Int, Int) -> Shape -> Color -> Form
 draw (x,y) shape color =
